@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "171413393142",
+    "project_id": "burnrate-app",
+    "storage_bucket": "burnrate-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:171413393142:android:42f17c68259f8338fba6d7",
+        "android_client_info": {
+          "package_name": "com.burnrate.burnrate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "171413393142-fh1golkj6a8q8tbkptai9md0vsc83mgn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.burnrate.burnrate",
+            "certificate_hash": "c1fa02a901890d9596849f4f05d2fac57d95927b"
+          }
+        },
+        {
+          "client_id": "171413393142-p8trsgl4j1gavde6t93le7pmgt8590cs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9U1BzamY-kgizrJcNFGLg-1EMQnTa5pA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "171413393142-p8trsgl4j1gavde6t93le7pmgt8590cs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
