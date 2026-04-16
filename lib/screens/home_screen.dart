@@ -3,6 +3,7 @@ import 'dashboard_screen.dart';
 import 'transactions_screen.dart';
 import 'add_transaction_screen.dart';
 import 'banks_screen.dart';
+import 'ai_chat_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
     TransactionsScreen(),
     AddTransactionScreen(),
     BanksScreen(),
+    AiChatScreen(),
   ];
 
   @override
@@ -33,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Transactions'),
           BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: 'Add'),
           BottomNavigationBarItem(icon: Icon(Icons.account_balance), label: 'Banks'),
+          BottomNavigationBarItem(icon: Icon(Icons.auto_awesome), label: 'AI Advisor'),
         ],
       ),
     );
