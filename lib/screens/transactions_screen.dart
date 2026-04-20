@@ -151,99 +151,166 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   );
                 }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: transactions.length,
-                  itemBuilder: (context, index) {
-                    final tx = transactions[index];
-                    final cat = getCategoryById(tx.category);
-                    return Dismissible(
-                      key: Key(tx.id),
-                      direction: DismissDirection.endToStart,
-                      background: Container(
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 20),
-                        margin: const EdgeInsets.only(bottom: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.danger,
-                          borderRadius: BorderRadius.circular(12),
+                final grouped = _groupByDate(transactions);
+                final widgets = <Widget>[];
+                for (final entry in grouped.entries) {
+                  widgets.add(
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 12, 0, 6),
+                      child: Text(
+                        entry.key,
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
                         ),
-                        child: const Icon(Icons.delete, color: Colors.white),
                       ),
-                      confirmDismiss: (_) async {
-                        return await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            backgroundColor: AppColors.surface,
-                            title: const Text('Delete Transaction'),
-                            content: Text('Delete "${tx.description}"?'),
-                            actions: [
-                              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text('Delete', style: TextStyle(color: AppColors.danger)),
-                              ),
-                            ],
+                    ),
+                  );
+                  widgets.addAll(entry.value.map((tx) => _buildTxItem(tx, uid, currencyFormat)));
+                }
+                final filtered = transactions;
+                return Column(
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        children: widgets,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: const BoxDecoration(
+                        color: AppColors.surface,
+                        border: Border(top: BorderSide(color: AppColors.border)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${filtered.length} transaction${filtered.length == 1 ? '' : 's'}',
+                            style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
                           ),
-                        );
-                      },
-                      onDismissed: (_) => _firestore.deleteTransaction(uid, tx.id),
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 42, height: 42,
-                              decoration: BoxDecoration(
-                                color: cat.color.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(cat.icon, color: cat.color, size: 20),
+                          Text(
+                            currencyFormat.format(filtered.fold<double>(0, (s, t) => s + t.amount)),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: filtered.fold<double>(0, (s, t) => s + t.amount) >= 0
+                                  ? AppColors.success : AppColors.danger,
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(tx.description, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
-                                  const SizedBox(height: 2),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        DateFormat('d MMM yyyy').format(tx.date),
-                                        style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      _sourceTag(tx.source),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Text(
-                              '${tx.amount < 0 ? '-' : '+'}${currencyFormat.format(tx.absAmount)}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                                color: tx.amount < 0 ? AppColors.danger : AppColors.success,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 );
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Map<String, List<TransactionModel>> _groupByDate(List<TransactionModel> txs) {
+    final map = <String, List<TransactionModel>>{};
+    for (final t in txs) {
+      final key = DateFormat('d MMMM yyyy').format(t.date);
+      map.putIfAbsent(key, () => []).add(t);
+    }
+    return map;
+  }
+
+  Widget _buildTxItem(TransactionModel tx, String uid, NumberFormat currencyFormat) {
+    final cat = getCategoryById(tx.category);
+    return Dismissible(
+      key: Key(tx.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: AppColors.danger,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Delete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+            SizedBox(width: 8),
+            Icon(Icons.delete, color: Colors.white),
+          ],
+        ),
+      ),
+      confirmDismiss: (_) async {
+        return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppColors.surface,
+            title: const Text('Delete Transaction'),
+            content: Text('Delete "${tx.description}"?'),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Delete', style: TextStyle(color: AppColors.danger)),
+              ),
+            ],
+          ),
+        );
+      },
+      onDismissed: (_) => _firestore.deleteTransaction(uid, tx.id),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 42, height: 42,
+              decoration: BoxDecoration(
+                color: cat.color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(cat.icon, color: cat.color, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(tx.description, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Text(
+                        DateFormat('d MMM yyyy').format(tx.date),
+                        style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                      ),
+                      const SizedBox(width: 8),
+                      _sourceTag(tx.source),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              '${tx.amount < 0 ? '-' : '+'}${currencyFormat.format(tx.absAmount)}',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                color: tx.amount < 0 ? AppColors.danger : AppColors.success,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

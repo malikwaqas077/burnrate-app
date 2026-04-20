@@ -22,27 +22,47 @@ class SummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final formatted = isCount
         ? amount.toInt().toString()
-        : NumberFormat.currency(locale: 'en_GB', symbol: '£').format(amount);
+        : NumberFormat.currency(locale: 'en_GB', symbol: '£').format(amount.abs());
 
     return Container(
-      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.surface, AppColors.surfaceLight],
+        ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(color: AppColors.textMuted, fontSize: 13)),
-          const SizedBox(height: 6),
-          Text(
-            formatted,
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: color),
-          ),
-          const SizedBox(height: 4),
-          Text(subtitle, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
-        ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(height: 3, color: color),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(color: AppColors.textMuted, fontSize: 13)),
+                  const SizedBox(height: 6),
+                  Text(
+                    formatted,
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(subtitle, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -17,6 +17,7 @@ class _BanksScreenState extends State<BanksScreen> with WidgetsBindingObserver {
   Map<String, bool> _status = const {'monzo': false, 'truelayer': false};
   bool _loadingStatus = true;
   String? _syncingProvider;
+  DateTime? _lastSynced;
 
   @override
   void initState() {
@@ -64,6 +65,7 @@ class _BanksScreenState extends State<BanksScreen> with WidgetsBindingObserver {
       await _bankService.syncProvider(_user, provider);
       await _refreshStatus();
       if (!mounted) return;
+      setState(() => _lastSynced = DateTime.now());
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Sync complete')));
@@ -110,6 +112,7 @@ class _BanksScreenState extends State<BanksScreen> with WidgetsBindingObserver {
               connected: _status['monzo'] == true,
               loading: _loadingStatus,
               syncing: _syncingProvider == 'monzo',
+              lastSynced: _lastSynced,
               onConnect: () => _bankService.connectMonzo(uid),
               onSync: () => _syncProvider('monzo'),
             ),
@@ -124,6 +127,7 @@ class _BanksScreenState extends State<BanksScreen> with WidgetsBindingObserver {
               connected: _status['truelayer'] == true,
               loading: _loadingStatus,
               syncing: _syncingProvider == 'truelayer',
+              lastSynced: _lastSynced,
               onConnect: () => _bankService.connectLloyds(uid),
               onSync: () => _syncProvider('truelayer'),
             ),
@@ -226,6 +230,7 @@ class _BankCard extends StatelessWidget {
   final bool connected;
   final bool loading;
   final bool syncing;
+  final DateTime? lastSynced;
   final VoidCallback onConnect;
   final VoidCallback onSync;
 
@@ -238,9 +243,17 @@ class _BankCard extends StatelessWidget {
     required this.connected,
     required this.loading,
     required this.syncing,
+    this.lastSynced,
     required this.onConnect,
     required this.onSync,
   });
+
+  String _timeAgo(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    return '${diff.inHours}h ago';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -270,12 +283,27 @@ class _BankCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 17,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                          ),
+                        ),
+                        if (connected) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 8, height: 8,
+                            decoration: BoxDecoration(
+                              color: AppColors.success,
+                              shape: BoxShape.circle,
+                              boxShadow: [BoxShadow(color: AppColors.success.withValues(alpha: 0.5), blurRadius: 6)],
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -356,6 +384,14 @@ class _BankCard extends StatelessWidget {
                     child: Text(syncing ? 'Syncing...' : 'Sync Now'),
                   ),
                 ),
+                if (lastSynced != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      'Last synced ${_timeAgo(lastSynced!)}',
+                      style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                    ),
+                  ),
               ],
             )
           else

@@ -9,13 +9,23 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final _auth = AuthService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLogin = true;
   bool _loading = false;
   String? _error;
+  late AnimationController _animController;
+  late Animation<double> _fadeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _animController.forward();
+  }
 
   Future<void> _submit() async {
     setState(() { _loading = true; _error = null; });
@@ -51,6 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _animController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -61,26 +72,49 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: SafeArea(
         child: Center(
-          child: SingleChildScrollView(
+          child: FadeTransition(
+            opacity: _fadeAnim,
+            child: SlideTransition(
+              position: Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero).animate(_fadeAnim),
+              child: SingleChildScrollView(
             padding: const EdgeInsets.all(32),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 88,
+                  height: 88,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [AppColors.primary, AppColors.accent],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(26),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.35),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                  child: const Icon(Icons.local_fire_department, size: 48, color: Colors.white),
+                  child: const Icon(Icons.local_fire_department, size: 50, color: Colors.white),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'BurnRate',
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.text),
+                ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [AppColors.primary, AppColors.accent],
+                  ).createShader(bounds),
+                  child: const Text(
+                    'BurnRate',
+                    style: TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 const Text(
@@ -150,7 +184,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: _loading ? null : _googleSignIn,
-                    icon: const Icon(Icons.g_mobiledata, size: 24),
+                    icon: Container(
+                      width: 24, height: 24,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Center(
+                        child: Text('G', style: TextStyle(
+                          color: Color(0xFF4285F4),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        )),
+                      ),
+                    ),
                     label: const Text('Continue with Google'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.text,
@@ -162,6 +209,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ],
             ),
+          ),
+        ),
           ),
         ),
       ),

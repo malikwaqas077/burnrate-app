@@ -70,6 +70,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,7 +120,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
           if (snapshot.connectionState == ConnectionState.waiting &&
               !snapshot.hasData &&
               _lastTransactions.isEmpty) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+            return Column(
+              children: [
+                LinearProgressIndicator(
+                  color: AppColors.primary,
+                  backgroundColor: AppColors.surfaceLight,
+                  minHeight: 2,
+                ),
+                const Spacer(),
+              ],
+            );
           }
 
           final transactions = snapshot.data ?? _lastTransactions;
@@ -142,6 +158,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _greeting(),
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            DateFormat('EEEE, d MMMM').format(DateTime.now()),
+                            style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        width: 42, height: 42,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppColors.primary, AppColors.accent],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(Icons.local_fire_department, color: Colors.white, size: 24),
+                      ),
+                    ],
+                  ),
+                ),
                 // Period selector
                 Container(
                   decoration: BoxDecoration(
@@ -296,20 +346,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 }),
 
                 if (transactions.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(40),
-                    child: Column(
-                      children: [
-                        Icon(Icons.receipt_long, size: 64, color: AppColors.textMuted),
-                        const SizedBox(height: 16),
-                        const Text('No transactions yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Add your first transaction or connect a bank to get started',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: AppColors.textMuted),
-                        ),
-                      ],
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.border, width: 1.5),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.receipt_long, size: 64, color: AppColors.textMuted),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'No transactions yet',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Add your first transaction or connect\na bank to get started',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: AppColors.textMuted, height: 1.5),
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton.icon(
+                            onPressed: () {},
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Transaction'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
               ],

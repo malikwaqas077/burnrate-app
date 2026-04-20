@@ -17,6 +17,8 @@ class AppColors {
   static const monzo = Color(0xFFE74C3C);
   static const lloyds = Color(0xFF006A4D);
   static const cash = Color(0xFFF9E2AF);
+  static const cardGradientStart = Color(0xFF232336);
+  static const cardGradientEnd = Color(0xFF1A1A2A);
 }
 
 ThemeData buildAppTheme() {
@@ -42,7 +44,8 @@ ThemeData buildAppTheme() {
         borderRadius: BorderRadius.circular(16),
         side: const BorderSide(color: AppColors.border, width: 1),
       ),
-      elevation: 0,
+      elevation: 2,
+      shadowColor: Colors.black.withValues(alpha: 0.4),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -86,9 +89,9 @@ ThemeData buildAppTheme() {
     ),
     dividerColor: AppColors.border,
     textTheme: const TextTheme(
-      headlineLarge: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold),
-      headlineMedium: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold),
-      titleLarge: TextStyle(color: AppColors.text, fontWeight: FontWeight.w600),
+      headlineLarge: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+      headlineMedium: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, letterSpacing: -0.3),
+      titleLarge: TextStyle(color: AppColors.text, fontWeight: FontWeight.w600, letterSpacing: -0.2),
       titleMedium: TextStyle(color: AppColors.text),
       bodyLarge: TextStyle(color: AppColors.text),
       bodyMedium: TextStyle(color: AppColors.text),

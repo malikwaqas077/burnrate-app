@@ -1001,10 +1001,17 @@ class _AiChatScreenState extends State<AiChatScreen> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser) ...[
-            const CircleAvatar(
-              radius: 16,
-              backgroundColor: AppColors.primary,
-              child: Icon(Icons.auto_awesome, size: 18, color: Colors.white),
+            Container(
+              width: 36, height: 36,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primary, AppColors.accent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.local_fire_department, size: 20, color: Colors.white),
             ),
             const SizedBox(width: 8),
           ],
@@ -1012,7 +1019,9 @@ class _AiChatScreenState extends State<AiChatScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: isUser ? AppColors.primary : AppColors.surfaceLight,
+                color: isUser
+                    ? AppColors.primary.withValues(alpha: 0.15)
+                    : AppColors.surface,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(18),
                   topRight: const Radius.circular(18),
@@ -1023,11 +1032,14 @@ class _AiChatScreenState extends State<AiChatScreen> {
                       ? const Radius.circular(4)
                       : const Radius.circular(18),
                 ),
+                border: Border.all(
+                  color: isUser ? AppColors.primary : AppColors.border,
+                ),
               ),
               child: Text(
                 msg['content'] ?? '',
                 style: TextStyle(
-                  color: isUser ? Colors.white : AppColors.text,
+                  color: isUser ? AppColors.primary : AppColors.text,
                   fontSize: 15,
                   height: 1.4,
                 ),
@@ -1043,36 +1055,27 @@ class _AiChatScreenState extends State<AiChatScreen> {
   Widget _buildTypingBubble() {
     return Row(
       children: [
-        const CircleAvatar(
-          radius: 16,
-          backgroundColor: AppColors.primary,
-          child: Icon(Icons.auto_awesome, size: 18, color: Colors.white),
+        Container(
+          width: 36, height: 36,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.primary, AppColors.accent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(Icons.local_fire_department, size: 20, color: Colors.white),
         ),
         const SizedBox(width: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.border),
           ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: 14,
-                height: 14,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.primary,
-                ),
-              ),
-              SizedBox(width: 10),
-              Text(
-                'Thinking...',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 13),
-              ),
-            ],
-          ),
+          child: const _TypingDotsIndicator(),
         ),
       ],
     );
@@ -1446,5 +1449,58 @@ class _AiChatScreenState extends State<AiChatScreen> {
         .where((w) => w.isNotEmpty)
         .map((w) => '${w[0].toUpperCase()}${w.substring(1)}');
     return words.join(' ');
+  }
+}
+
+class _TypingDotsIndicator extends StatefulWidget {
+  const _TypingDotsIndicator();
+
+  @override
+  State<_TypingDotsIndicator> createState() => _TypingDotsIndicatorState();
+}
+
+class _TypingDotsIndicatorState extends State<_TypingDotsIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (i) {
+            final delay = i * 0.2;
+            final t = (_controller.value - delay).clamp(0.0, 1.0);
+            final opacity = 0.3 + 0.7 * math.sin(t * math.pi);
+            return Container(
+              margin: EdgeInsets.only(right: i < 2 ? 4 : 0),
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: opacity),
+                shape: BoxShape.circle,
+              ),
+            );
+          }),
+        );
+      },
+    );
   }
 }
